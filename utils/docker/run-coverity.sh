@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 #
-# Copyright 2017, Intel Corporation
+# Copyright 2017-2018, Intel Corporation
 #
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions
@@ -56,4 +56,12 @@ export COVERITY_SCAN_BUILD_COMMAND="make -j all"
 cd $WORKDIR
 
 # Run the Coverity scan
-curl -s https://scan.coverity.com/scripts/travisci_build_coverity_scan.sh | bash
+wget https://scan.coverity.com/scripts/travisci_build_coverity_scan.sh
+perl -pi -e 's/set -e/set -ex/' travisci_build_coverity_scan.sh
+bash ./travisci_build_coverity_scan.sh
+
+echo /pmdk/cov-int/build-log.txt:
+cat /pmdk/cov-int/build-log.txt
+
+echo /pmdk/cov-int/scm_log.txt:
+cat /pmdk/cov-int/scm_log.txt
