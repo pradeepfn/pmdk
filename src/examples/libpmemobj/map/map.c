@@ -35,7 +35,7 @@
  */
 #include <stdlib.h>
 #include <stdio.h>
-#include <libpmemobj.h>
+#include <libpmemnvmtsx.h>
 
 #include "map.h"
 

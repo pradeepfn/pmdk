@@ -1,6 +1,4 @@
-#!/usr/bin/env bash
-#
-# Copyright 2017, Intel Corporation
+# Copyright 2014-2018, Intel Corporation
 #
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions
@@ -29,12 +27,22 @@
 # THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 # (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-#
 
 #
-# Used to check if there are no banned functions in .o file
+# src/libpmemobj/Makefile -- Makefile for libpmemobj
 #
-# usage: ./check-os.sh [os.h path] [.o file] [.c file]
 
-exit 0
+LIBRARY_NAME = pmemnvmtsx
+LIBRARY_SO_VERSION = 1
+LIBRARY_VERSION = 0.0
 
+include ../common/pmemcommon.inc
+
+SOURCE +=\
+	libpmemnvmtsx.c\
+
+include ../Makefile.inc
+
+#CFLAGS += -DUSE_LIBDL 
+
+LIBS += -pthread $(LIBDL)

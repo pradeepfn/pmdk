@@ -1,6 +1,5 @@
-#!/usr/bin/env bash
 #
-# Copyright 2017, Intel Corporation
+# Copyright 2014-2017, Intel Corporation
 #
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions
@@ -30,11 +29,29 @@
 # (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
-
 #
-# Used to check if there are no banned functions in .o file
+# src/libpmemnvmtsx.map -- linker map file for libpmemobj
 #
-# usage: ./check-os.sh [os.h path] [.o file] [.c file]
-
-exit 0
-
+LIBPMEMOBJ_1.0 {
+	global:
+		pmem_msync;
+		pmem_persist;
+		pmem_drain;
+		pmem_deep_flush;
+		pmem_is_pmem;
+		pmemobj_root;
+		pmemobj_direct;
+		pmemobj_tx_alloc;
+		pmemobj_tx_zalloc;	
+		pmemobj_tx_free;
+		pmemobj_tx_begin;
+		pmemobj_tx_end;
+		pmemobj_tx_commit;
+		pmemobj_type_num;
+		pmemobj_tx_add_range_direct;
+		pmemobj_create;
+		pmemobj_close;
+		pmemobj_errormsg;
+	local:
+		*;
+};

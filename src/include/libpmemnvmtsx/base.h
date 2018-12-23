@@ -1,13 +1,29 @@
-#ifndef _LIBNVMTSX_BASE_H
-#define _LIBNVMTSX_BASE_H
+#ifndef _LIBPMEMNVMTSX_BASE_H
+#define _LIBPMEMNVMTSX_BASE_H
 
 #include <stdint.h>
+#include <errno.h>
+#include <string.h>
+#include <sys/types.h>
+
+#define PMEMOBJ_MIN_POOL ((size_t)(1024 * 1024 * 8)) /* 8 MiB */
+//typedef int mode_t;
 
 typedef struct pmemoid {
 		uint64_t pool_uuid_lo;
 			uint64_t off;
 } PMEMoid;
 
+
+#define POBJ_ROOT(pop, t) (\
+		  (TOID(t))pmemobj_root((pop), sizeof(t)))
+
+
+#define TOID_EQUALS(lhs, rhs)\
+	  ((lhs).oid.off == (rhs).oid.off &&\
+		     (lhs).oid.pool_uuid_lo == (rhs).oid.pool_uuid_lo)
+
+#define POBJ_ROOT_TYPE_NUM 0
 #define _toid_struct
 #define _toid_union
 #define _toid_enum
@@ -46,11 +62,17 @@ typedef struct pmemoid {
    */
   #define TOID_DECLARE(t, i) _TOID_DECLARE(t, i)
 
+#define TOID_DECLARE_ROOT(t) _TOID_DECLARE(t, POBJ_ROOT_TYPE_NUM)
 
 static const PMEMoid OID_NULL = { 0, 0 };
 #define TOID_NULL(t)  ((TOID(t))OID_NULL)
 #define TOID_IS_NULL(o) ((o).oid.off == 0)
 #define OID_IS_NULL(o)  ((o).off == 0)
+#define OID_IS_NULL(o)  ((o).off == 0)
+#define OID_EQUALS(lhs, rhs)\
+	((lhs).off == (rhs).off &&\
+	   (lhs).pool_uuid_lo == (rhs).pool_uuid_lo)
+
 #define TOID_TYPE_NUM_OF(o) (sizeof(*(o)._type_num) - 1)
 #define TOID_TYPE_NUM(t) (sizeof(_toid_##t##_toid_type_num) - 1)
 #define TOID_VALID(o) (TOID_TYPE_NUM_OF(o) == pmemobj_type_num((o).oid))
@@ -90,8 +112,9 @@ typedef struct pmemobjpool PMEMobjpool;
 
 #define TX_NEW(t)\
   ((TOID(t))pmemobj_tx_alloc(sizeof(t), TOID_TYPE_NUM(t)))
-#define TX_ZNEW(t)\
-  ((TOID(t))pmemobj_tx_zalloc(sizeof(t), TOID_TYPE_NUM(t)))
+
+#define TX_ZNEW(t) ((TOID(t))pmemobj_tx_alloc(sizeof(t), TOID_TYPE_NUM(t)))
+//#define TX_ZNEW(t) ((TOID(t))pmemobj_tx_zalloc(sizeof(t), TOID_TYPE_NUM(t)))
 
 #define TX_FREE(o)\
   pmemobj_tx_free((o).oid)

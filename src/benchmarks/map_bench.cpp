@@ -44,12 +44,12 @@
 extern "C" {
 #endif
 #include "map.h"
-#include "map_btree.h"
+//#include "map_btree.h"
 #include "map_ctree.h"
-#include "map_hashmap_atomic.h"
-#include "map_hashmap_tx.h"
-#include "map_rbtree.h"
-#include "map_rtree.h"
+//#include "map_hashmap_atomic.h"
+//#include "map_hashmap_tx.h"
+//#include "map_rbtree.h"
+//#include "map_rtree.h"
 #ifndef _WIN32
 }
 #endif
@@ -80,9 +80,12 @@ static const struct {
 	const char *str;
 	const struct map_ops *ops;
 } map_types[] = {
-	{"ctree", MAP_CTREE},		{"btree", MAP_BTREE},
-	{"rtree", MAP_RTREE},		{"rbtree", MAP_RBTREE},
-	{"hashmap_tx", MAP_HASHMAP_TX}, {"hashmap_atomic", MAP_HASHMAP_ATOMIC},
+	{"ctree", MAP_CTREE},		
+/*	{"btree", MAP_BTREE},
+	{"rtree", MAP_RTREE},		
+	{"rbtree", MAP_RBTREE},
+	{"hashmap_tx", MAP_HASHMAP_TX}, 
+	{"hashmap_atomic", MAP_HASHMAP_ATOMIC}, */
 };
 
 #define MAP_TYPES_NUM (sizeof(map_types) / sizeof(map_types[0]))

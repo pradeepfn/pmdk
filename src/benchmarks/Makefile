@@ -1,7 +1,5 @@
 #
-# Copyright 2014-2018, Intel Corporation
-#
-# Redistribution and use in source and binary forms, with or without
+# Copyright 2014-2018, Intel Corporation # # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions
 # are met:
 #
@@ -66,23 +64,11 @@ SRC=pmembench.cpp\
     clo_vec.cpp\
     config_reader.cpp\
     scenario.cpp\
-    log.cpp\
-    blk.cpp\
-    vmem.cpp\
-    pmem_memset.cpp\
-    pmem_memcpy.cpp\
-    pmem_flush.cpp\
-    pmemobj_gen.cpp\
-    pmemobj_persist.cpp\
-    obj_pmalloc.cpp\
-    obj_locks.cpp\
-    obj_lanes.cpp\
-    map_bench.cpp\
-    pmemobj_tx.cpp\
-    pmemobj_atomic_lists.cpp
+		map_bench.cpp
 
 # Configuration file without the .cfg extension
-CONFIGS=pmembench_log\
+CONFIGS=
+#CONFIGS=pmembench_log\
 	pmembench_blk\
 	pmembench_vmem\
 	pmembench_memset\
@@ -106,14 +92,19 @@ LDFLAGS += -L../examples/libpmemobj/map
 LDFLAGS += $(EXTRA_LDFLAGS)
 ifeq ($(DEBUG),)
 LIBS += ../nondebug/libpmemcommon.a
+LIBS += ../nondebug/libpmemnvmtsx.a
 else
-LIBS += ../debug/libpmemcommon.a
+#LIBS += ../debug/libpmemcommon.a
 endif
-LIBS += -lpmemobj -lpmemlog -lpmemblk -lpmem -lvmem -pthread -lm \
+#LIBS += -lpmemobj -lpmemlog -lpmemblk -lpmem -lvmem -pthread -lm \
+LIBS += -lpmemnvmtsx -pthread -lm \
 	$(LIBDL) $(LIBUUID)
 ifeq ($(call check_librt), n)
 LIBS += -lrt
 endif
+
+
+LIBS += -pthread -lm -ldl
 
 CXXFLAGS = -Wall
 CXXFLAGS += -Werror
@@ -123,7 +114,7 @@ CXXFLAGS += -Wpointer-arith
 CXXFLAGS += -Wunused-macros
 CXXFLAGS += -pthread
 CXXFLAGS += -I../include
-CXXFLAGS += -I../libpmemobj
+#CXXFLAGS += -I../libpmemobj
 CXXFLAGS += -I../common
 CXXFLAGS += -I../examples/libpmemobj/map
 CXXFLAGS += -I../rpmem_common
@@ -159,7 +150,7 @@ endif
 LIBMAP_DIR=../examples/libpmemobj/map
 LIBMAP=$(LIBMAP_DIR)/libmap.a
 
-OBJS += pmemobj.o
+#OBJS += pmemobj.o
 
 ifeq ($(DEBUG),)
 CXXFLAGS += -O3
@@ -218,9 +209,9 @@ sparse:
 
 .PHONY: all clean clobber run $(CONFIGS)
 
-PMEMOBJ_SYMBOLS=pmalloc pfree lane_hold lane_release
+#PMEMOBJ_SYMBOLS=pmalloc pfree lane_hold lane_release
 
-pmemobj.o: $(LIBS_PATH)/libpmemobj/libpmemobj_unscoped.o
-	$(OBJCOPY) --localize-hidden $(addprefix -G, $(PMEMOBJ_SYMBOLS)) $< $@
+#pmemobj.o: $(LIBS_PATH)/libpmemobj/libpmemobj_unscoped.o
+#	$(OBJCOPY) --localize-hidden $(addprefix -G, $(PMEMOBJ_SYMBOLS)) $< $@
 
 -include .deps/*.P
