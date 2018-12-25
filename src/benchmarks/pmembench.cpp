@@ -1418,6 +1418,9 @@ pmembench_run(struct pmembench *pb, struct benchmark *bench)
 
 		size_t n_threads =
 			!bench->info->multithread ? 1 : args->n_threads;
+		/* init tmlib of NVMTSX */
+		TM_STARTUP(n_threads);
+
 		size_t n_ops =
 			!bench->info->multiops ? 1 : args->n_ops_per_thread;
 		size_t n_ops_per_thread_copy = args->n_ops_per_thread;

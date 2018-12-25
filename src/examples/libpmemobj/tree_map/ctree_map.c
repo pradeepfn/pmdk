@@ -76,12 +76,11 @@ ctree_map_create(PMEMobjpool *pop, TOID(struct ctree_map) *map, void *arg)
 {
 	int ret = 0;
 
-	TX_BEGIN(pop) {
+	TX_BEGIN(pop);
 		pmemobj_tx_add_range_direct(map, sizeof(*map));
 		*map = TX_ZNEW(struct ctree_map);
-	/*} TX_ONABORT {
-		ret = 1; */
-	} TX_END
+
+	TX_END;
 
 	return ret;
 }
@@ -113,11 +112,11 @@ ctree_map_clear_node(PMEMoid p)
 int
 ctree_map_clear(PMEMobjpool *pop, TOID(struct ctree_map) map)
 {
-	TX_BEGIN(pop) {
+	TX_BEGIN(pop);
 		ctree_map_clear_node(D_RW(map)->root.slot);
 		TX_ADD_FIELD(map, root);
 		D_RW(map)->root.slot = OID_NULL;
-	} TX_END
+	TX_END;
 
 	return 0;
 }
@@ -129,14 +128,14 @@ int
 ctree_map_destroy(PMEMobjpool *pop, TOID(struct ctree_map) *map)
 {
 	int ret = 0;
-	TX_BEGIN(pop) {
+	TX_BEGIN(pop);
 		ctree_map_clear(pop, *map);
 		pmemobj_tx_add_range_direct(map, sizeof(*map));
 		TX_FREE(*map);
 		*map = TOID_NULL(struct ctree_map);
 	/*} TX_ONABORT {
 		ret = 1;*/
-	} TX_END
+	TX_END;
 
 	return ret;
 }
@@ -187,13 +186,13 @@ ctree_map_insert_new(PMEMobjpool *pop, TOID(struct ctree_map) map,
 {
 	int ret = 0;
 
-	TX_BEGIN(pop) {
+	TX_BEGIN(pop);
 		PMEMoid n = pmemobj_tx_alloc(size, type_num);
 		constructor(pop, pmemobj_direct(n), arg);
 		ctree_map_insert(pop, map, key, n);
 	/*} TX_ONABORT {
 		ret = 1;*/
-	} TX_END
+	TX_END;
 
 	return ret;
 }
@@ -218,7 +217,7 @@ ctree_map_insert(PMEMobjpool *pop, TOID(struct ctree_map) map,
 	}
 
 	struct tree_map_entry e = {key, value};
-	TX_BEGIN(pop) {
+	TX_BEGIN(pop);
 		if (p->key == 0 || p->key == key) {
 			pmemobj_tx_add_range_direct(p, sizeof(*p));
 			*p = e;
@@ -228,7 +227,7 @@ ctree_map_insert(PMEMobjpool *pop, TOID(struct ctree_map) map,
 		}
 	/*} TX_ONABORT {
 		ret = 1;*/
-	} TX_END
+	TX_END;
 
 	return ret;
 }
@@ -271,12 +270,12 @@ ctree_map_remove_free(PMEMobjpool *pop, TOID(struct ctree_map) map,
 {
 	int ret = 0;
 
-	TX_BEGIN(pop) {
+	TX_BEGIN(pop);
 		PMEMoid val = ctree_map_remove(pop, map, key);
 		pmemobj_tx_free(val);
 	/*} TX_ONABORT {
 		ret = 1;*/
-	} TX_END
+	TX_END;
 
 	return ret;
 }
@@ -295,11 +294,11 @@ ctree_map_remove(PMEMobjpool *pop, TOID(struct ctree_map) map, uint64_t key)
 	PMEMoid ret = leaf->slot;
 
 	if (parent == NULL) { /* root */
-		TX_BEGIN(pop) {
+		TX_BEGIN(pop);
 			pmemobj_tx_add_range_direct(leaf, sizeof(*leaf));
 			leaf->key = 0;
 			leaf->slot = OID_NULL;
-		} TX_END
+		TX_END;
 	} else {
 		/*
 		 * In this situation:
@@ -309,7 +308,7 @@ ctree_map_remove(PMEMobjpool *pop, TOID(struct ctree_map) map, uint64_t key)
 		 * there's no point in leaving the parent internal node
 		 * so it's swapped with the remaining node and then also freed.
 		 */
-		TX_BEGIN(pop) {
+		TX_BEGIN(pop);
 			struct tree_map_entry *dest = parent;
 			TOID(struct tree_map_node) node;
 			TOID_ASSIGN(node, parent->slot);
@@ -318,7 +317,7 @@ ctree_map_remove(PMEMobjpool *pop, TOID(struct ctree_map) map, uint64_t key)
 				D_RO(node)->entries[0].key == leaf->key];
 
 			TX_FREE(node);
-		} TX_END
+		TX_END;
 	}
 
 	return ret;

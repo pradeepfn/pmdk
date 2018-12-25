@@ -6,6 +6,8 @@
 #include <string.h>
 #include <sys/types.h>
 
+#include "tm.h"
+
 #define PMEMOBJ_MIN_POOL ((size_t)(1024 * 1024 * 8)) /* 8 MiB */
 //typedef int mode_t;
 
