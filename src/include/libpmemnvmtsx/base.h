@@ -11,7 +11,8 @@
 
 typedef struct pmemoid {
 		uint64_t pool_uuid_lo;
-			uint64_t off;
+		uint64_t off;
+		uint64_t type; // we carry the type
 } PMEMoid;
 
 
@@ -64,7 +65,7 @@ typedef struct pmemoid {
 
 #define TOID_DECLARE_ROOT(t) _TOID_DECLARE(t, POBJ_ROOT_TYPE_NUM)
 
-static const PMEMoid OID_NULL = { 0, 0 };
+static const PMEMoid OID_NULL = { 0, 0, 0};
 #define TOID_NULL(t)  ((TOID(t))OID_NULL)
 #define TOID_IS_NULL(o) ((o).oid.off == 0)
 #define OID_IS_NULL(o)  ((o).off == 0)
@@ -75,11 +76,12 @@ static const PMEMoid OID_NULL = { 0, 0 };
 
 #define TOID_TYPE_NUM_OF(o) (sizeof(*(o)._type_num) - 1)
 #define TOID_TYPE_NUM(t) (sizeof(_toid_##t##_toid_type_num) - 1)
-#define TOID_VALID(o) (TOID_TYPE_NUM_OF(o) == pmemobj_type_num((o).oid))
-
-
+//#define TOID_VALID(o) (TOID_TYPE_NUM_OF(o) == pmemobj_type_num((o).oid))
 #define OID_INSTANCEOF(o, t) (TOID_TYPE_NUM(t) == pmemobj_type_num(o))
 
+
+#define TOID_VALID(o) (1)
+//#define OID_INSTANCEOF(o, t) (TOID_TYPE_NUM(t) == TOID_TYPE_NUM_OF(o))
 
 #define TOID_ASSIGN(o, value)(\
       {\
@@ -113,7 +115,8 @@ typedef struct pmemobjpool PMEMobjpool;
 #define TX_NEW(t)\
   ((TOID(t))pmemobj_tx_alloc(sizeof(t), TOID_TYPE_NUM(t)))
 
-#define TX_ZNEW(t) ((TOID(t))pmemobj_tx_alloc(sizeof(t), TOID_TYPE_NUM(t)))
+#define TX_ZNEW(t)\
+ 	((TOID(t))pmemobj_tx_alloc(sizeof(t), TOID_TYPE_NUM(t)))
 //#define TX_ZNEW(t) ((TOID(t))pmemobj_tx_zalloc(sizeof(t), TOID_TYPE_NUM(t)))
 
 #define TX_FREE(o)\

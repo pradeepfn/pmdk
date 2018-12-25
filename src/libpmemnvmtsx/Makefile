@@ -39,6 +39,7 @@ LIBRARY_VERSION = 0.0
 include ../common/pmemcommon.inc
 
 SOURCE +=\
+	cuckoo.c\
 	libpmemnvmtsx.c\
 
 include ../Makefile.inc

@@ -1,90 +1,86 @@
+#include <stdio.h>
+#include <stdlib.h>
+
 #include "libpmemnvmtsx.h"
-
-
-
-PMEMoid pmemobj_tx_zalloc(size_t size, uint64_t type_num)
-{
-	return OID_NULL;
-}
 
 
 
 const char *pmemobj_errormsg(void)
 {
-
-	return "error";
+	return "error in pmemobj action";
 }
-
-
-/* pmem */
 
 int pmem_msync(const void *addr, size_t len)
 {
-
+	printf("calling pmem_sync: not implemented");	
 	return 0;
 }
 
 void pmem_persist(const void *addr, size_t len)
 {
-
-	
+	printf("calling pmem_persist: not implemented");	
 }
-
 
 void pmem_drain(void)
 {
-
+	printf("calling pmem_drain: not implemented");	
 }
 
 void pmem_deep_flush(const void *addr, size_t len)
 {
-
+	printf("calling pmem_deep_flush: not implemented");	
 }
 
 int pmem_is_pmem(const void *addr, size_t len)
 {
-
-	return 0;
+	/* always we are operating on pmem */	
+	return 1;
 }
 
 
 
 PMEMobjpool *pmemobj_create(const char *path, const char *layout, size_t poolsize, mode_t mode)
 {
-	return NULL;
+	return (PMEMobjpool *)malloc(sizeof(PMEMobjpool));
 }
 
 void pmemobj_close(PMEMobjpool *pop)
 {
-
+	free(pop);
 }
 
 PMEMoid pmemobj_root(PMEMobjpool *pop, size_t size)
 {
-
-	return OID_NULL;
+	PMEMoid root;
+	root.pool_uuid_lo = 0;
+	root.off = (uint64_t)malloc(size);
+	return root;
 }
 
 uint64_t pmemobj_type_num(PMEMoid oid)
 {
-	return 0;
+	return oid.type;
 }
 
 void *pmemobj_direct(PMEMoid oid)
 {
-	return NULL;
+	return (void *)oid.off;
 }
 
 PMEMoid pmemobj_tx_alloc(size_t size, uint64_t type_num)
 {
-
-	return OID_NULL;
+	PMEMoid oid;
+	oid.pool_uuid_lo = 0;
+	oid.off = (uint64_t)malloc(size);
+	oid.type = type_num;
+	return oid;
 }
 
 
 int pmemobj_tx_free(PMEMoid oid)
 {
-	return 0;	
+	free((void *)oid.off);	
+	return 0;
 }
 			 
 

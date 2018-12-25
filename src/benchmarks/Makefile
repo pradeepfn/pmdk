@@ -31,6 +31,10 @@
 #
 # src/benchmarks/Makefile -- build all benchmarks
 #
+#
+
+DEBUG=1
+
 TOP := $(dir $(lastword $(MAKEFILE_LIST)))../..
 
 include $(TOP)/src/common.inc
@@ -94,7 +98,8 @@ ifeq ($(DEBUG),)
 LIBS += ../nondebug/libpmemcommon.a
 LIBS += ../nondebug/libpmemnvmtsx.a
 else
-#LIBS += ../debug/libpmemcommon.a
+LIBS += ../debug/libpmemcommon.a
+LIBS += ../debug/libpmemnvmtsx.a
 endif
 #LIBS += -lpmemobj -lpmemlog -lpmemblk -lpmem -lvmem -pthread -lm \
 LIBS += -lpmemnvmtsx -pthread -lm \
