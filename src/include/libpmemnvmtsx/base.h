@@ -110,10 +110,6 @@ typedef struct pmemobjpool PMEMobjpool;
 
 /* transaction API */
 
-#define TX_BEGIN(pop)
-#define TX_ONABORT
-#define TX_END
-
 #define TX_NEW(t)\
   ((TOID(t))pmemobj_tx_alloc(sizeof(t), TOID_TYPE_NUM(t)))
 

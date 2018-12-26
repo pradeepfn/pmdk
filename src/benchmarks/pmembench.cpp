@@ -67,6 +67,8 @@
 #include "rpmem_ssh.h"
 #include "rpmem_util.h"
 #endif
+#include "libpmemnvmtsx.h"
+
 
 /* average time required to get a current time from the system */
 unsigned long long Get_time_avg;

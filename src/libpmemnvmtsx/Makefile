@@ -39,11 +39,11 @@ LIBRARY_VERSION = 0.0
 include ../common/pmemcommon.inc
 
 SOURCE +=\
-	cuckoo.c\
 	libpmemnvmtsx.c\
 
 include ../Makefile.inc
 
 #CFLAGS += -DUSE_LIBDL 
-
+CFLAGS += -I../include/libpmemnvmtsx/tsxseq
+CFLAGS += -I/nethome/pfernando3/nvmtsx/tmlib/include
 LIBS += -pthread $(LIBDL)

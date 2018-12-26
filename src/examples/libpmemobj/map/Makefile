@@ -36,7 +36,7 @@
 TOP := $(dir $(lastword $(MAKEFILE_LIST)))../../../../
 include $(TOP)/src/common.inc
 
-PROGS = mapcli data_store
+#PROGS = mapcli data_store
 #LIBRARIES = map_ctree map_btree map_rbtree map_skiplist\
 	    map_hashmap_atomic map_hashmap_tx map_rtree\
 	    map
@@ -59,6 +59,10 @@ LIBS += $(shell $(PKG_CONFIG) --libs libuv)
 endif
 
 include ../../Makefile.inc
+
+CFLAGS += -I../../../include/libpmemnvmtsx/tsxseq
+CFLAGS += -I/nethome/pfernando3/nvmtsx/tmlib/include
+
 
 CFLAGS += -I../
 #CFLAGS += -I../hashmap
