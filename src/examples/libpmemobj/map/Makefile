@@ -43,6 +43,9 @@ include $(TOP)/src/common.inc
 
 LIBRARIES = map_ctree map
 
+TMBUILD ?= seq
+TMLIBDIR ?= dummy
+
 LIBUV := $(call check_package, libuv --atleast-version 1.0)
 ifeq ($(LIBUV),y)
 PROGS += kv_server
@@ -60,8 +63,8 @@ endif
 
 include ../../Makefile.inc
 
-CFLAGS += -I../../../include/libpmemnvmtsx/tsxseq
-CFLAGS += -I/nethome/pfernando3/nvmtsx/tmlib/include
+CFLAGS += -I../../../include/libpmemnvmtsx/$(TMBUILD)
+CFLAGS += -I$(TMLIBDIR)/include
 
 
 CFLAGS += -I../

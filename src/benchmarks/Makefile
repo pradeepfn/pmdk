@@ -100,7 +100,7 @@ LIBS += ../nondebug/libpmemnvmtsx.a
 else
 LIBS += ../debug/libpmemcommon.a
 LIBS += ../debug/libpmemnvmtsx.a
-LIBS += /nethome/pfernando3/nvmtsx/tmlib/build/libtsxseq.a
+LIBS += $(TMLIBPATH)
 endif
 #LIBS += -lpmemobj -lpmemlog -lpmemblk -lpmem -lvmem -pthread -lm \
 LIBS += -lpmemnvmtsx -pthread -lm \
@@ -129,8 +129,8 @@ CXXFLAGS += $(OS_INCS)
 CXXFLAGS += -DSRCVERSION='"$(SRCVERSION)"'
 
 CXXFLAGS += -I../include/
-CXXFLAGS += -I/nethome/pfernando3/pmdk/src/include/libpmemnvmtsx/tsxseq
-CXXFLAGS += -I/nethome/pfernando3/nvmtsx/tmlib/include
+CXXFLAGS += -I../include/libpmemnvmtsx/$(TMBUILD)
+CXXFLAGS += -I$(TMLIBDIR)/include
 
 ifeq ($(COVERAGE),1)
 CXXFLAGS += $(GCOV_CFLAGS)

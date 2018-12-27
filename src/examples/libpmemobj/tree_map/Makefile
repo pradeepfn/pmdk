@@ -36,12 +36,15 @@
 #LIBRARIES = ctree_map btree_map rtree_map rbtree_map
 LIBRARIES = ctree_map
 
+TMBUILD ?= seq
+TMLIBDIR ?= dummy
+
 #LIBS = -lpmemobj
 
 include ../../Makefile.inc
 
-CFLAGS += -I../../../include/libpmemnvmtsx/tsxseq
-CFLAGS += -I/nethome/pfernando3/nvmtsx/tmlib/include
+CFLAGS += -I../../../include/libpmemnvmtsx/$(TMBUILD)
+CFLAGS += -I$(TMLIBDIR)/include
 libctree_map.o: ctree_map.o
 #libbtree_map.o: btree_map.o
 #librtree_map.o: rtree_map.o

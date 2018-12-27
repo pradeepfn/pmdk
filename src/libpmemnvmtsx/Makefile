@@ -36,6 +36,9 @@ LIBRARY_NAME = pmemnvmtsx
 LIBRARY_SO_VERSION = 1
 LIBRARY_VERSION = 0.0
 
+TMBUILD ?= tsxseq
+TMLIBDIR ?= dummy
+
 include ../common/pmemcommon.inc
 
 SOURCE +=\
@@ -44,6 +47,6 @@ SOURCE +=\
 include ../Makefile.inc
 
 #CFLAGS += -DUSE_LIBDL 
-CFLAGS += -I../include/libpmemnvmtsx/tsxseq
-CFLAGS += -I/nethome/pfernando3/nvmtsx/tmlib/include
+CFLAGS += -I../include/libpmemnvmtsx/$(TMBUILD)
+CFLAGS += -I$(TMLIBDIR)/include
 LIBS += -pthread $(LIBDL)
