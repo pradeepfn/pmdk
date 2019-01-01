@@ -1,3 +1,5 @@
+#ifndef TM_H
+#define TM_H 1
 
 #include "ulog.h"
 
@@ -23,3 +25,5 @@
 #define TM_WRITE(var, val)     ({ulog_store((ulog_word_t *)(void *)&(var), (ulog_word_t)val); var=val;})
 #define TM_WRITE_P(var, val)   ({ulog_store_ptr((void **)(void *)&(var), val); var=val;})
 #define TM_WRITE_F(var, val)   ({ulog_store_float((float *)(void *)&(var), val); var=val;})
+
+#endif

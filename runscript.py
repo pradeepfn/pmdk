@@ -8,7 +8,7 @@ DBG=1
 
 #config
 __home = os.getcwd()
-__tmlib_home = '/home/pradeep/nvmtsx/tmlib'
+__tmlib_home = '/nethome/pfernando3/nvmtsx/tmlib'
 
 __ctree = 'ctree'
 __empty = ''
@@ -19,11 +19,17 @@ workload_l.append(__ctree)
 __seq       = 'seq'
 __tsxseq    = 'tsxseq'
 __undo      = 'undo'
+__redo      = 'redo'
+__tsxundo   = 'tsxundo'
+__tsxredo   = 'tsxredo'
 
 logtype_l = []
 logtype_l.append(__seq)
 logtype_l.append(__tsxseq)
 logtype_l.append(__undo)
+logtype_l.append(__redo)
+logtype_l.append(__tsxundo)
+logtype_l.append(__tsxredo)
 
 parser = argparse.ArgumentParser(prog="runscript", description="script to run pmdk runscript")
 parser.add_argument('-b', dest='build', action='store_true', default=False, help="build benchmark")
@@ -77,6 +83,10 @@ def sh(cmd):
 def libname(lt):
     if lt == __tsxseq:
         return __tsxseq
+    elif lt == __undo or lt == __tsxundo:
+        return __tsxundo
+    elif lt == __redo or lt == __tsxredo:
+        return __tsxredo
     else:
         return None
 
@@ -116,7 +126,7 @@ def build_bench():
     bench_h = 'src/benchmarks'
     cd(bench_h)
     if libname(ltype) is not None:
-        __tmlib_path = __tmlib_home + '/build/lib' + ltype + '.a'
+        __tmlib_path = __tmlib_home + '/build/lib' + libname(ltype) + '.a'
     cmd = 'make TMBUILD='+  ltype + ' TMLIBDIR=' + __tmlib_home +\
           ' TMLIBPATH=' + __tmlib_path
     sh(cmd)
