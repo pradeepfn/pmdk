@@ -170,9 +170,14 @@ ctree_map_insert_leaf(struct tree_map_entry *p,
 	/* insert the found destination in the other slot */
 	D_RW(new_node)->entries[!d] = *p;
 
-	pmemobj_tx_add_range_direct(p, sizeof(*p));
-	p->key = 0;
-	p->slot = new_node.oid;
+	/* pmemobj_tx_add_range_direct(p, sizeof(*p));
+	   p->key = 0;
+	   p->slot = new_node.oid; */
+
+	TM_WRITE(p->key,0); // key
+	TM_WRITE(p->slot.pool_uuid_lo, new_node.oid.pool_uuid_lo);
+	TM_WRITE(p->slot.off, new_node.oid.off);
+	TM_WRITE(p->slot.type, new_node.oid.type); // oid assign
 }
 
 /*
@@ -219,7 +224,7 @@ ctree_map_insert(PMEMobjpool *pop, TOID(struct ctree_map) map,
 	struct tree_map_entry e = {key, value};
 	TX_BEGIN(pop);
 		if (p->key == 0 || p->key == key) {
-			pmemobj_tx_add_range_direct(p, sizeof(*p));
+			//pmemobj_tx_add_range_direct(p, sizeof(*p));
 			*p = e;
 		} else {
 			ctree_map_insert_leaf(&D_RW(map)->root, e,

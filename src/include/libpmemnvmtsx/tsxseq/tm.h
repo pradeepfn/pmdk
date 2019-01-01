@@ -16,10 +16,10 @@
 #define TX_ONABORT
 #define TX_END        tsxseqend();
 
-#define TM_SHARED_READ(var)           (var)
-#define TM_SHARED_READ_P(var)         (var)
-#define TM_SHARED_READ_F(var)         (var)
+#define TM_READ(var)           (var)
+#define TM_READ_P(var)         (var)
+#define TM_READ_F(var)         (var)
   
-#define TM_SHARED_WRITE(var, val)     var = val
-#define TM_SHARED_WRITE_P(var, val)   var = val
-#define TM_SHARED_WRITE_F(var, val)   var = val
+#define TM_WRITE(var, val)     var = val
+#define TM_WRITE_P(var, val)   var = val
+#define TM_WRITE_F(var, val)   var = val

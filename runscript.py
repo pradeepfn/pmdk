@@ -16,12 +16,14 @@ __empty = ''
 workload_l = []
 workload_l.append(__ctree)
 
-__seq = 'seq'
-__tsxseq = 'tsxseq'
+__seq       = 'seq'
+__tsxseq    = 'tsxseq'
+__undo      = 'undo'
 
 logtype_l = []
 logtype_l.append(__seq)
 logtype_l.append(__tsxseq)
+logtype_l.append(__undo)
 
 parser = argparse.ArgumentParser(prog="runscript", description="script to run pmdk runscript")
 parser.add_argument('-b', dest='build', action='store_true', default=False, help="build benchmark")
