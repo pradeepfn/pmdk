@@ -77,6 +77,17 @@ PMEMoid pmemobj_tx_alloc(size_t size, uint64_t type_num)
 }
 
 
+PMEMoid pmemobj_tp_zalloc(size_t size, uint64_t type_num)
+{
+	PMEMoid oid;
+	oid.pool_uuid_lo = 0;
+	oid.off = (uint64_t)malloc(size);
+	oid.type = type_num;
+	return oid;
+}
+
+
+
 int pmemobj_tx_free(PMEMoid oid)
 {
 	free((void *)oid.off);	
@@ -104,5 +115,8 @@ int pmemobj_tx_add_range_direct(const void *ptr, size_t size)
 	return 0;
 }
 
+int pmemobj_tx_add_range(PMEMoid oid, uint64_t off, size_t size){
+	return 0;
+}
 
 

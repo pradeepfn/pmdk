@@ -117,11 +117,17 @@ typedef struct pmemobjpool PMEMobjpool;
  	((TOID(t))pmemobj_tx_alloc(sizeof(t), TOID_TYPE_NUM(t)))
 //#define TX_ZNEW(t) ((TOID(t))pmemobj_tx_zalloc(sizeof(t), TOID_TYPE_NUM(t)))
 
+#define TX_ZALLOC(t, size)\
+	  ((TOID(t))pmemobj_tx_alloc(size, TOID_TYPE_NUM(t)))
+
 #define TX_FREE(o)\
   pmemobj_tx_free((o).oid)
 
 
 #define TX_ADD_FIELD(o, field) TX_ADD_DIRECT(&(D_RO(o)->field))
 #define TX_ADD_DIRECT(p) pmemobj_tx_add_range_direct(p, sizeof(*p))
+#define TX_ADD(o)\
+	  pmemobj_tx_add_range((o).oid, 0, sizeof(*(o)._type))
+
 
 #endif

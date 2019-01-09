@@ -1,8 +1,9 @@
 #!/usr/bin/env bash
 
-declare -a arr=("ctree")
+#declare -a arr=("ctree")
+declare -a arr=("hashmap")
 #declare -a lt=("seq" "tsxseq")
-declare -a lt=("redo")
+declare -a lt=("seq")
 
 for bm in "${arr[@]}"
 do

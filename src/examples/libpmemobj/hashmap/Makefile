@@ -30,11 +30,19 @@
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
 
-LIBRARIES = hashmap_atomic hashmap_tx
+#LIBRARIES = hashmap_atomic hashmap_tx
+LIBRARIES = hashmap_tx
 
-LIBS = -lpmemobj
+TMBUILD ?= seq
+TMLIBDIR ?= dummy
+
+
+#LIBS = -lpmemobj
 
 include ../../Makefile.inc
 
-libhashmap_atomic.o: hashmap_atomic.o
+CFLAGS += -I../../../include/libpmemnvmtsx/$(TMBUILD)
+CFLAGS += -I$(TMLIBDIR)/include
+
+#libhashmap_atomic.o: hashmap_atomic.o
 libhashmap_tx.o: hashmap_tx.o

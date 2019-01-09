@@ -47,7 +47,7 @@ extern "C" {
 //#include "map_btree.h"
 #include "map_ctree.h"
 //#include "map_hashmap_atomic.h"
-//#include "map_hashmap_tx.h"
+#include "map_hashmap_tx.h"
 //#include "map_rbtree.h"
 //#include "map_rtree.h"
 #ifndef _WIN32
@@ -81,10 +81,10 @@ static const struct {
 	const struct map_ops *ops;
 } map_types[] = {
 	{"ctree", MAP_CTREE},		
+	{"hashmap_tx", MAP_HASHMAP_TX}, 
 /*	{"btree", MAP_BTREE},
 	{"rtree", MAP_RTREE},		
 	{"rbtree", MAP_RBTREE},
-	{"hashmap_tx", MAP_HASHMAP_TX}, 
 	{"hashmap_atomic", MAP_HASHMAP_ATOMIC}, */
 };
 

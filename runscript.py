@@ -8,13 +8,15 @@ DBG=1
 
 #config
 __home = os.getcwd()
-__tmlib_home = '/nethome/pfernando3/nvmtsx/tmlib'
+__tmlib_home = '/home/pradeep/nvmtsx/tmlib'
 
 __ctree = 'ctree'
+__hashmap = 'hashmap'
 __empty = ''
 
 workload_l = []
 workload_l.append(__ctree)
+workload_l.append(__hashmap)
 
 __seq       = 'seq'
 __tsxseq    = 'tsxseq'
@@ -117,8 +119,20 @@ def build_ctree():
     cd(__home)
 
 
-    #build map that wraps c-tree
+def build_hashmap():
+    ltype = args.logtype
+
+    map_h = 'src/examples/libpmemobj'
+    #build hashmap first
+    cd(map_h + '/hashmap')
+    cmd = 'make TMBUILD='+  ltype + ' TMLIBDIR=' + __tmlib_home
+    sh(cmd)
     cd(__home)
+    cd(map_h + '/map')
+    cmd = 'make TMBUILD='+  ltype + ' TMLIBDIR=' + __tmlib_home
+    sh(cmd)
+    cd(__home)
+
 
 def build_bench():
     ltype = args.logtype
@@ -141,10 +155,17 @@ def clean():
     cd(__home)
 
     map_h = 'src/examples/libpmemobj'
+
     cd(map_h + '/tree_map')
     cmd = 'make clean'
     sh(cmd)
     cd(__home)
+
+    cd(map_h + '/hashmap')
+    cmd = 'make clean'
+    sh(cmd)
+    cd(__home)
+
     cd(map_h + '/map')
     cmd = 'make clean'
     sh(cmd)
@@ -158,7 +179,10 @@ def clean():
 
 
 def run_bench():
-    cmd = "./run_ctree.sh --small"
+    if args.workload == __ctree:
+        cmd = "./run_ctree.sh --small"
+    if args.workload == __hashmap:
+        cmd = "./run_hashmap.sh --small"
     sh(cmd)
 
 
@@ -172,6 +196,7 @@ if __name__ == '__main__':
     if args.build is True:
         build_libpmemnvmtsx()
         build_ctree()
+        build_hashmap()
         build_bench()
     if args.clean is True:
         clean()

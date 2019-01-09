@@ -41,14 +41,15 @@ LIBPMEMOBJ_1.0 {
 		pmem_is_pmem;
 		pmemobj_root;
 		pmemobj_direct;
+		pmemobj_tp_zalloc;	
 		pmemobj_tx_alloc;
-		pmemobj_tx_zalloc;	
 		pmemobj_tx_free;
 		pmemobj_tx_begin;
 		pmemobj_tx_end;
 		pmemobj_tx_commit;
 		pmemobj_type_num;
 		pmemobj_tx_add_range_direct;
+		pmemobj_tx_add_range;
 		pmemobj_create;
 		pmemobj_close;
 		pmemobj_errormsg;

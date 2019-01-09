@@ -41,7 +41,7 @@ include $(TOP)/src/common.inc
 	    map_hashmap_atomic map_hashmap_tx map_rtree\
 	    map
 
-LIBRARIES = map_ctree map
+LIBRARIES = map_ctree map_hashmap_tx map
 
 TMBUILD ?= seq
 TMLIBDIR ?= dummy
@@ -68,7 +68,7 @@ CFLAGS += -I$(TMLIBDIR)/include
 
 
 CFLAGS += -I../
-#CFLAGS += -I../hashmap
+CFLAGS += -I../hashmap
 CFLAGS += -I../tree_map
 #CFLAGS += -I../list_map
 
@@ -81,10 +81,13 @@ libmap_ctree.o: map_ctree.o map.o ../tree_map/libctree_map.a
 #libmap_rtree.o: map_rtree.o map.o ../tree_map/librtree_map.a
 #libmap_rbtree.o: map_rbtree.o map.o ../tree_map/librbtree_map.a
 #libmap_hashmap_atomic.o: map_hashmap_atomic.o map.o ../hashmap/libhashmap_atomic.a
-#libmap_hashmap_tx.o: map_hashmap_tx.o map.o ../hashmap/libhashmap_tx.a
+libmap_hashmap_tx.o: map_hashmap_tx.o map.o ../hashmap/libhashmap_tx.a
 #libmap_skiplist.o: map_skiplist.o map.o ../list_map/libskiplist_map.a
 
-libmap.o: map.o map_ctree.o ../tree_map/libctree_map.a
+libmap.o: map.o map_ctree.o map_hashmap_tx.o\
+ 	../tree_map/libctree_map.a\
+	../hashmap/libhashmap_tx.a
+
 
 #	map_btree.o map_rtree.o map_rbtree.o map_skiplist.o\
 	map_hashmap_atomic.o map_hashmap_tx.o\
@@ -114,5 +117,5 @@ libmap.o: map.o map_ctree.o ../tree_map/libctree_map.a
 #../hashmap/libhashmap_atomic.a:
 #	$(MAKE) -C ../hashmap hashmap_atomic
 
-#../hashmap/libhashmap_tx.a:
-#	$(MAKE) -C ../hashmap hashmap_tx
+../hashmap/libhashmap_tx.a:
+	$(MAKE) -C ../hashmap hashmap_tx
