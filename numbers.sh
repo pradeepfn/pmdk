@@ -12,8 +12,8 @@ do
 	do
 		./runscript.py -c -w "$bm" -lt "$l"
 		./runscript.py -b -w "$bm" -lt "$l"
-		#./runscript.py -r -w "$bm" -lt "$l" > results/"$thrt"/"$bm"/"$bm"_t1_"$l".txt
-		./runscript.py -r -w "$bm" -lt "$l"
+		./runscript.py -r -w "$bm" -lt "$l" > results/"$bm"/"$bm"_t1_"$l".txt
+		#./runscript.py -r -w "$bm" -lt "$l"
 	done
 done
 exit
