@@ -230,7 +230,8 @@ def run_bench():
     if args.workload == __ctree:
         cmd = "./run_ctree.sh --small"
     if args.workload == __hashmap:
-        cmd = "./run_hashmap.sh --small"
+        #cmd = "./run_hashmap.sh --small"
+        cmd = "./run_hashmap.sh --large"
     sh(cmd)
 
 
