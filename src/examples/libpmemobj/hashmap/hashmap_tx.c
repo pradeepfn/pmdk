@@ -130,14 +130,14 @@ hm_tx_rebuild(PMEMobjpool *pop, TOID(struct hashmap_tx) hashmap, size_t new_len)
 	if (new_len == 0)
 		new_len = D_RO(buckets_old)->nbuckets;
 
-	size_t sz_old = sizeof(struct buckets) +
+	/* size_t sz_old = sizeof(struct buckets) +
 			D_RO(buckets_old)->nbuckets *
-			sizeof(TOID(struct entry));
+			sizeof(TOID(struct entry)); */
 	size_t sz_new = sizeof(struct buckets) +
 			new_len * sizeof(TOID(struct entry));
 
 	TX_BEGIN(pop);
-		TX_ADD_FIELD(hashmap, buckets);
+	/*	TX_ADD_FIELD(hashmap, buckets);
 		TOID(struct buckets) buckets_new =
 				TX_ZALLOC(struct buckets, sz_new);
 		D_RW(buckets_new)->nbuckets = new_len;
@@ -159,7 +159,44 @@ hm_tx_rebuild(PMEMobjpool *pop, TOID(struct hashmap_tx) hashmap, size_t new_len)
 		}
 
 		D_RW(hashmap)->buckets = buckets_new;
+		TX_FREE(buckets_old); */
+
+
+		 TOID(struct buckets) buckets_new =
+				TX_ZALLOC(struct buckets, sz_new);
+
+		D_RW(buckets_new)->nbuckets = new_len; // new update. not an in-place update
+		for (size_t i = 0; i < D_RO(buckets_old)->nbuckets; ++i) {
+			while (!(TM_READ(D_RO(buckets_old)->bucket[i].oid.off) == 0)) {
+					TOID(struct entry) en;
+					en.oid.pool_uuid_lo = TM_READ(D_RO(buckets_old)->bucket[i].oid.pool_uuid_lo);
+					en.oid.off = TM_READ(D_RO(buckets_old)->bucket[i].oid.off);
+					en.oid.type = TM_READ(D_RO(buckets_old)->bucket[i].oid.type);
+
+					uint64_t h = hash(&hashmap, &buckets_new,
+						D_RO(en)->key);
+
+				TM_WRITE(D_RW(buckets_old)->bucket[i].oid.pool_uuid_lo, D_RO(en)->next.oid.pool_uuid_lo);
+				TM_WRITE(D_RW(buckets_old)->bucket[i].oid.off, D_RO(en)->next.oid.off);
+				TM_WRITE(D_RW(buckets_old)->bucket[i].oid.type, D_RO(en)->next.oid.type);
+
+
+				TM_WRITE(D_RW(en)->next.oid.pool_uuid_lo, D_RO(buckets_new)->bucket[h].oid.pool_uuid_lo);
+				TM_WRITE(D_RW(en)->next.oid.off, D_RO(buckets_new)->bucket[h].oid.off);
+				TM_WRITE(D_RW(en)->next.oid.type, D_RO(buckets_new)->bucket[h].oid.type);
+
+				D_RW(buckets_new)->bucket[h].oid.pool_uuid_lo = TM_READ(en.oid.pool_uuid_lo);
+				D_RW(buckets_new)->bucket[h].oid.off = TM_READ(en.oid.off);
+				D_RW(buckets_new)->bucket[h].oid.type = TM_READ(en.oid.type);
+			}
+		}
+
+		TM_WRITE(D_RW(hashmap)->buckets.oid.pool_uuid_lo , buckets_new.oid.pool_uuid_lo );
+		TM_WRITE(D_RW(hashmap)->buckets.oid.off , buckets_new.oid.off );
+		TM_WRITE(D_RW(hashmap)->buckets.oid.type , buckets_new.oid.type );
 		TX_FREE(buckets_old);
+
+
 	TX_END;
 
 }
@@ -189,9 +226,8 @@ hm_tx_insert(PMEMobjpool *pop, TOID(struct hashmap_tx) hashmap,
 		num++;
 	}
 
-	int ret = 0;
 	TX_BEGIN(pop);
-		TX_ADD_FIELD(D_RO(hashmap)->buckets, bucket[h]);
+		/*TX_ADD_FIELD(D_RO(hashmap)->buckets, bucket[h]);
 		TX_ADD_FIELD(hashmap, count);
 
 		TOID(struct entry) e = TX_NEW(struct entry);
@@ -200,12 +236,21 @@ hm_tx_insert(PMEMobjpool *pop, TOID(struct hashmap_tx) hashmap,
 		D_RW(e)->next = D_RO(buckets)->bucket[h];
 		D_RW(buckets)->bucket[h] = e;
 
-		D_RW(hashmap)->count++;
+		D_RW(hashmap)->count++;*/
+		
+		TOID(struct entry) e = TX_NEW(struct entry);
+		D_RW(e)->key = key;
+		D_RW(e)->value = value;
+		D_RW(e)->next = D_RO(buckets)->bucket[h];
+
+		TM_WRITE(D_RW(buckets)->bucket[h].oid.pool_uuid_lo, e.oid.pool_uuid_lo);
+		TM_WRITE(D_RW(buckets)->bucket[h].oid.off, e.oid.off);
+		TM_WRITE(D_RW(buckets)->bucket[h].oid.type, e.oid.type);
+
+		TM_WRITE(D_RW(hashmap)->count,D_RW(hashmap)->count+1);
+	
 		num++;
 	TX_END;
-
-	if (ret)
-		return ret;
 
 	if (num > MAX_HASHSET_THRESHOLD ||
 			(num > MIN_HASHSET_THRESHOLD &&

@@ -154,11 +154,11 @@ def build_hashmap():
     map_h = 'src/examples/libpmemobj'
     #build hashmap first
     cd(map_h + '/hashmap')
-    cmd = 'make TMBUILD='+  ltype + ' TMLIBDIR=' + __tmlib_home
+    cmd = 'make TMBUILD='+  tm_header(ltype) + ' TMLIBDIR=' + __tmlib_home
     sh(cmd)
     cd(__home)
     cd(map_h + '/map')
-    cmd = 'make TMBUILD='+  ltype + ' TMLIBDIR=' + __tmlib_home
+    cmd = 'make TMBUILD='+  tm_header(ltype) + ' TMLIBDIR=' + __tmlib_home
     sh(cmd)
     cd(__home)
 
