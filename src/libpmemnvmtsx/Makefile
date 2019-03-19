@@ -47,6 +47,6 @@ SOURCE +=\
 include ../Makefile.inc
 
 #CFLAGS += -DUSE_LIBDL 
-CFLAGS += -I../include/libpmemnvmtsx/$(TMBUILD)
+CFLAGS += -D_GNU_SOURCE -I../include/libpmemnvmtsx/$(TMBUILD)
 CFLAGS += -I$(TMLIBDIR)/include
 LIBS += -pthread $(LIBDL)

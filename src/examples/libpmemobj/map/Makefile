@@ -63,6 +63,7 @@ endif
 
 include ../../Makefile.inc
 
+CFLAGS += -D_GNU_SOURCE
 CFLAGS += -I../../../include/libpmemnvmtsx/$(TMBUILD)
 CFLAGS += -I$(TMLIBDIR)/include
 

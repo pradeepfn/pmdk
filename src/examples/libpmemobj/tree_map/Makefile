@@ -43,7 +43,7 @@ TMLIBDIR ?= dummy
 
 include ../../Makefile.inc
 
-CFLAGS += -I../../../include/libpmemnvmtsx/$(TMBUILD)
+CFLAGS += -D_GNU_SOURCE -I../../../include/libpmemnvmtsx/$(TMBUILD)
 CFLAGS += -I$(TMLIBDIR)/include
 libctree_map.o: ctree_map.o
 #libbtree_map.o: btree_map.o

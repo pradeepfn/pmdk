@@ -34,7 +34,7 @@
  * os_deep_linux.c -- Linux abstraction layer
  */
 
-#define _GNU_SOURCE
+//#define _GNU_SOURCE
 
 #include <inttypes.h>
 #include <fcntl.h>

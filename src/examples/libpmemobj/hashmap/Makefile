@@ -41,7 +41,7 @@ TMLIBDIR ?= dummy
 
 include ../../Makefile.inc
 
-CFLAGS += -I../../../include/libpmemnvmtsx/$(TMBUILD)
+CFLAGS += -D_GNU_SOURCE -I../../../include/libpmemnvmtsx/$(TMBUILD)
 CFLAGS += -I$(TMLIBDIR)/include
 
 #libhashmap_atomic.o: hashmap_atomic.o

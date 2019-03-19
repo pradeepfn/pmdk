@@ -34,7 +34,7 @@
  * os_auto_flush_linux.c -- Linux abstraction layer for auto flush detection
  */
 
-#define _GNU_SOURCE
+//#define _GNU_SOURCE
 
 #include <inttypes.h>
 #include <fcntl.h>
