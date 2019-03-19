@@ -41,6 +41,8 @@
 #include "hashmap_tx.h"
 #include "hashmap_internal.h"
 
+static void
+hm_tx_debug(PMEMobjpool *pop, TOID(struct hashmap_tx) hashmap, FILE *out);
 
 /* layout definition */
 TOID_DECLARE(struct buckets, HASHMAP_TX_TYPE_OFFSET + 1);
@@ -87,8 +89,8 @@ create_hashmap(PMEMobjpool *pop, TOID(struct hashmap_tx) hashmap, uint32_t seed)
 	size_t sz = sizeof(struct buckets) +
 			len * sizeof(TOID(struct entry));
 
-	TX_BEGIN(pop);
-		TX_ADD(hashmap);
+	//TX_BEGIN(pop);
+		//TX_ADD(hashmap);
 
 		D_RW(hashmap)->seed = seed;
 		do {
@@ -100,7 +102,7 @@ create_hashmap(PMEMobjpool *pop, TOID(struct hashmap_tx) hashmap, uint32_t seed)
 		D_RW(hashmap)->buckets = TX_ZALLOC(struct buckets, sz);
 		D_RW(D_RW(hashmap)->buckets)->nbuckets = len;
 		
-		TX_END;
+		//TX_END;
 }
 
 /*
@@ -121,6 +123,10 @@ hash(const TOID(struct hashmap_tx) *hashmap,
 
 /*
  * hm_tx_rebuild -- rebuilds the hashmap with a new number of buckets
+ * 1. This algorithm written with undo logs in mind.
+ * 2. You don't really need this much complex transaction to build hashmap.
+ * 3. build the new one and switch over. Don't update old one during re-build.
+ * 4. Redo log based re-build takes exponential amount of time. Due to large read-redirections.
  */
 static void
 hm_tx_rebuild(PMEMobjpool *pop, TOID(struct hashmap_tx) hashmap, size_t new_len)
@@ -130,14 +136,14 @@ hm_tx_rebuild(PMEMobjpool *pop, TOID(struct hashmap_tx) hashmap, size_t new_len)
 	if (new_len == 0)
 		new_len = D_RO(buckets_old)->nbuckets;
 
-	/* size_t sz_old = sizeof(struct buckets) +
+	 size_t sz_old = sizeof(struct buckets) +
 			D_RO(buckets_old)->nbuckets *
-			sizeof(TOID(struct entry)); */
+			sizeof(TOID(struct entry));
 	size_t sz_new = sizeof(struct buckets) +
 			new_len * sizeof(TOID(struct entry));
 
 	TX_BEGIN(pop);
-	/*	TX_ADD_FIELD(hashmap, buckets);
+		/* TX_ADD_FIELD(hashmap, buckets);
 		TOID(struct buckets) buckets_new =
 				TX_ZALLOC(struct buckets, sz_new);
 		D_RW(buckets_new)->nbuckets = new_len;
@@ -162,11 +168,12 @@ hm_tx_rebuild(PMEMobjpool *pop, TOID(struct hashmap_tx) hashmap, size_t new_len)
 		TX_FREE(buckets_old); */
 
 
-		 TOID(struct buckets) buckets_new =
+		TOID(struct buckets) buckets_new =
 				TX_ZALLOC(struct buckets, sz_new);
 
 		D_RW(buckets_new)->nbuckets = new_len; // new update. not an in-place update
 		for (size_t i = 0; i < D_RO(buckets_old)->nbuckets; ++i) {
+			TOID(struct entry) temp;
 			while (!(TM_READ(D_RO(buckets_old)->bucket[i].oid.off) == 0)) {
 					TOID(struct entry) en;
 					en.oid.pool_uuid_lo = TM_READ(D_RO(buckets_old)->bucket[i].oid.pool_uuid_lo);
@@ -185,20 +192,25 @@ hm_tx_rebuild(PMEMobjpool *pop, TOID(struct hashmap_tx) hashmap, size_t new_len)
 				TM_WRITE(D_RW(en)->next.oid.off, D_RO(buckets_new)->bucket[h].oid.off);
 				TM_WRITE(D_RW(en)->next.oid.type, D_RO(buckets_new)->bucket[h].oid.type);
 
-				D_RW(buckets_new)->bucket[h].oid.pool_uuid_lo = TM_READ(en.oid.pool_uuid_lo);
-				D_RW(buckets_new)->bucket[h].oid.off = TM_READ(en.oid.off);
-				D_RW(buckets_new)->bucket[h].oid.type = TM_READ(en.oid.type);
+
+				D_RW(buckets_new)->bucket[h] = en;
+				// we modified  next field of en. hence have to read them from log
+		        D_RW(D_RW(buckets_new)->bucket[h])->next.oid.pool_uuid_lo = TM_READ(D_RW(en)->next.oid.pool_uuid_lo);
+		        D_RW(D_RW(buckets_new)->bucket[h])->next.oid.off = TM_READ(D_RW(en)->next.oid.off);
+		        D_RW(D_RW(buckets_new)->bucket[h])->next.oid.type = TM_READ(D_RW(en)->next.oid.type);
+		        temp = D_RW(buckets_new)->bucket[h];
 			}
 		}
 
 		TM_WRITE(D_RW(hashmap)->buckets.oid.pool_uuid_lo , buckets_new.oid.pool_uuid_lo );
 		TM_WRITE(D_RW(hashmap)->buckets.oid.off , buckets_new.oid.off );
 		TM_WRITE(D_RW(hashmap)->buckets.oid.type , buckets_new.oid.type );
-		TX_FREE(buckets_old);
+
 
 
 	TX_END;
 
+	TX_FREE(buckets_old);
 }
 
 /*
@@ -227,7 +239,7 @@ hm_tx_insert(PMEMobjpool *pop, TOID(struct hashmap_tx) hashmap,
 	}
 
 	TX_BEGIN(pop);
-		/*TX_ADD_FIELD(D_RO(hashmap)->buckets, bucket[h]);
+	/*	TX_ADD_FIELD(D_RO(hashmap)->buckets, bucket[h]);
 		TX_ADD_FIELD(hashmap, count);
 
 		TOID(struct entry) e = TX_NEW(struct entry);
@@ -236,7 +248,7 @@ hm_tx_insert(PMEMobjpool *pop, TOID(struct hashmap_tx) hashmap,
 		D_RW(e)->next = D_RO(buckets)->bucket[h];
 		D_RW(buckets)->bucket[h] = e;
 
-		D_RW(hashmap)->count++;*/
+		D_RW(hashmap)->count++; */
 		
 		TOID(struct entry) e = TX_NEW(struct entry);
 		D_RW(e)->key = key;
@@ -257,6 +269,7 @@ hm_tx_insert(PMEMobjpool *pop, TOID(struct hashmap_tx) hashmap,
 			D_RO(hashmap)->count > 2 * D_RO(buckets)->nbuckets))
 		hm_tx_rebuild(pop, hashmap, D_RO(buckets)->nbuckets * 2);
 
+	//hm_tx_debug(pop,hashmap,stdout);
 	return 0;
 }
 
@@ -430,13 +443,13 @@ hm_tx_create(PMEMobjpool *pop, TOID(struct hashmap_tx) *map, void *arg)
 {
 	struct hashmap_args *args = (struct hashmap_args *)arg;
 	int ret = 0;
-	TX_BEGIN(pop);
-		TX_ADD_DIRECT(map);
+	//TX_BEGIN(pop);
+		//TX_ADD_DIRECT(map);
 		*map = TX_ZNEW(struct hashmap_tx);
 
 		uint32_t seed = args ? args->seed : 0;
 		create_hashmap(pop, *map, seed);
-	TX_END;
+	//TX_END;
 
 	return ret;
 }

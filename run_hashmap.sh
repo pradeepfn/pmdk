@@ -20,7 +20,7 @@ then
 	$bin -f $dir -d 128 -n 10240 -t 2 -r 2 -T hashmap_tx   
 elif [[ $action == '--large' ]]
 then
-	$bin -f $dir -d 128 -n 102400 -t 4 -r 2 -T hashmap_tx   
+	$bin -f $dir -d 128 -n 102400 -t 4 -r 1 -T hashmap_tx   
 else
 	exit
 fi
