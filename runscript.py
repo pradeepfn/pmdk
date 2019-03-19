@@ -8,7 +8,7 @@ DBG=1
 
 #config
 __home = os.getcwd()
-__tmlib_home = '/home/pradeep/nvmtsx/tmlib'
+__tmlib_home = '/nethome/pfernando3/nvmtsx/tmlib'
 __nvmtsx_home = '/nethome/pfernando3/nvmtsx'
 
 __ctree = 'ctree'
@@ -228,9 +228,10 @@ def clean():
 
 def run_bench():
     if args.workload == __ctree:
-        cmd = "./run_ctree.sh --small"
+        cmd = "./run_ctree.sh --large"
     if args.workload == __hashmap:
-        cmd = "./run_hashmap.sh --small"
+        cmd = "./run_hashmap.sh --large"
+        #cmd = "./run_hashmap.sh --small"
     sh(cmd)
 
 
