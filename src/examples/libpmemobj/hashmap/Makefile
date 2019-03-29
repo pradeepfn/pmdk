@@ -40,7 +40,7 @@ TMLIBDIR ?= dummy
 #LIBS = -lpmemobj
 
 include ../../Makefile.inc
-
+CFLAGS += -Wno-unused-variable -Wno-unused-but-set-variable
 CFLAGS += -D_GNU_SOURCE -I../../../include/libpmemnvmtsx/$(TMBUILD)
 CFLAGS += -I$(TMLIBDIR)/include
 
