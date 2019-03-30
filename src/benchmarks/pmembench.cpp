@@ -1324,6 +1324,8 @@ pmembench_run(struct pmembench *pb, struct benchmark *bench)
 
 	struct clo_vec *clovec = NULL;
 
+	//initialize vmem allocator
+	bind_main_thread();
 	assert(bench->info != NULL);
 	pmembench_merge_clos(bench);
 

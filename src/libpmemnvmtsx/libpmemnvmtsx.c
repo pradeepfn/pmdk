@@ -1,8 +1,10 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+#include "libvmem.h"
 #include "libpmemnvmtsx.h"
 
+extern VMEM *vmp;
 
 
 const char *pmemobj_errormsg(void)
@@ -41,19 +43,19 @@ int pmem_is_pmem(const void *addr, size_t len)
 
 PMEMobjpool *pmemobj_create(const char *path, const char *layout, size_t poolsize, mode_t mode)
 {
-	return (PMEMobjpool *)malloc(sizeof(PMEMobjpool));
+	return (PMEMobjpool *)vmem_malloc(sizeof(PMEMobjpool));
 }
 
 void pmemobj_close(PMEMobjpool *pop)
 {
-	free(pop);
+	vmem_free(vmp,pop);
 }
 
 PMEMoid pmemobj_root(PMEMobjpool *pop, size_t size)
 {
 	PMEMoid root;
 	root.pool_uuid_lo = 0;
-	root.off = (uint64_t)malloc(size);
+	root.off = (uint64_t)vmem_malloc(vmp,size);
 	return root;
 }
 
@@ -71,7 +73,7 @@ PMEMoid pmemobj_tx_alloc(size_t size, uint64_t type_num)
 {
 	PMEMoid oid;
 	oid.pool_uuid_lo = 0;
-	oid.off = (uint64_t)malloc(size);
+	oid.off = (uint64_t)vmem_malloc(vmp,size);
 	oid.type = type_num;
 	return oid;
 }
@@ -81,7 +83,7 @@ PMEMoid pmemobj_tp_zalloc(size_t size, uint64_t type_num)
 {
 	PMEMoid oid;
 	oid.pool_uuid_lo = 0;
-	oid.off = (uint64_t)malloc(size);
+	oid.off = (uint64_t)vmem_malloc(vmp,size);
 	oid.type = type_num;
 	return oid;
 }
@@ -90,7 +92,7 @@ PMEMoid pmemobj_tp_zalloc(size_t size, uint64_t type_num)
 
 int pmemobj_tx_free(PMEMoid oid)
 {
-	free((void *)oid.off);	
+	vmem_free(vmp,(void *)oid.off);	
 	return 0;
 }
 			 
