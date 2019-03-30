@@ -34,7 +34,9 @@
  * os_posix.c -- abstraction layer for basic Posix functions
  */
 
-//#define _GNU_SOURCE
+#ifndef _GNU_SOURCE
+#define _GNU_SOURCE
+#endif
 
 #include <fcntl.h>
 #include <stdarg.h>

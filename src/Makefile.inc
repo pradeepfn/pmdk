@@ -30,7 +30,7 @@
 #
 # src/Makefile.inc -- common Makefile rules for PMDK
 #
-DEBUG=1
+#DEBUG=1
 
 TOP := $(dir $(lastword $(MAKEFILE_LIST)))..
 

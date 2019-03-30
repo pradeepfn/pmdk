@@ -33,7 +33,7 @@
 #
 #
 
-DEBUG=1
+#DEBUG=0
 
 TOP := $(dir $(lastword $(MAKEFILE_LIST)))../..
 
@@ -97,6 +97,7 @@ LDFLAGS += $(EXTRA_LDFLAGS)
 ifeq ($(DEBUG),)
 LIBS += ../nondebug/libpmemcommon.a
 LIBS += ../nondebug/libpmemnvmtsx.a
+LIBS += $(TMLIBPATH)
 else
 LIBS += ../debug/libpmemcommon.a
 LIBS += ../debug/libpmemnvmtsx.a

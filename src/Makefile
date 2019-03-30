@@ -35,6 +35,7 @@
 TOP := $(dir $(lastword $(MAKEFILE_LIST)))..
 include $(TOP)/src/common.inc
 
+
 TARGETS = libpmem libvmem libpmemblk libpmemlog libpmemobj libpmempool\
 		  libpmemcto libvmmalloc tools
 ALL_TARGETS = $(TARGETS) common librpmem examples benchmarks
@@ -43,7 +44,8 @@ SCOPE_DIRS = $(TARGETS) common librpmem rpmem_common
 
 DEBUG_RELEASE_TARGETS = common libpmem libvmem libpmemblk libpmemlog libpmemobj\
 	libpmempool libvmmalloc librpmem libpmemcto
-RELEASE_TARGETS = tools examples benchmarks
+#RELEASE_TARGETS = tools examples benchmarks
+RELEASE_TARGETS = tools examples
 
 CLEAN_NO_JE_TARGETS = $(ALL_TARGETS) rpmem_common test
 CLEAN_TARGETS = $(CLEAN_NO_JE_TARGETS) jemalloc
