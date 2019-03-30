@@ -8,8 +8,8 @@ DBG=1
 
 #config
 __home = os.getcwd()
-__tmlib_home = '/nethome/pfernando3/nvmtsx/tmlib'
-__nvmtsx_home = '/nethome/pfernando3/nvmtsx'
+__tmlib_home = '/home/pfernando/nvmtsx/tmlib'
+__nvmtsx_home = '/home/pfernando/nvmtsx'
 
 __ctree = 'ctree'
 __hashmap = 'hashmap'
@@ -84,6 +84,12 @@ def cd(dirt):
         except:
             print 'invalid directory ', path
             sys.exit(0)
+
+
+def cd_absolute(dirt):
+    os.chdir(dirt);
+
+
 
 def sh(cmd):
 
@@ -178,7 +184,7 @@ def build_bench():
 def build_tmlib():
     ltype = args.logtype
     #print 'pmdk_home = ' + __home
-    cd('../nvmtsx')
+    cd_absolute(__nvmtsx_home)
     cmd = './runscript.py -b -w tmlib -lt ' + ltype   
     sh(cmd)
     cd(__home)
@@ -187,7 +193,7 @@ def build_tmlib():
 def clean_tmlib():
     ltype = args.logtype
 
-    cd('../nvmtsx')
+    cd_absolute(__nvmtsx_home)
     cmd = './runscript.py -c -w tmlib -lt ' + ltype   
     sh(cmd)
     cd(__home)
@@ -230,7 +236,7 @@ def run_bench():
     if args.workload == __ctree:
         cmd = "./run_ctree.sh --large"
     if args.workload == __hashmap:
-        cmd = "./run_hashmap.sh --large"
+        cmd = "./run_hashmap.sh --med"
         #cmd = "./run_hashmap.sh --small"
     sh(cmd)
 
