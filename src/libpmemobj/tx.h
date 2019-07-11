@@ -71,7 +71,13 @@ enum undo_types {
 };
 
 struct lane_tx_layout {
+#ifndef __BLIZZARD_FT
 	uint64_t state;
+#else
+	uint64_t ptr_state;		// mini-transaction; stores to same cacheline preserved by intel x86. so we can get away with multiple ordering poitns 
+	uint64_t *state;		// we point to the state variable on mbuf
+	char padding[64 - 2*sizeof(uint64_t)]; //cacheline padding
+#endif
 	struct pvector undo_log[MAX_UNDO_TYPES];
 };
 
