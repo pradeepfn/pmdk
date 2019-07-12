@@ -54,6 +54,9 @@ struct tx {
 	PMEMobjpool *pop;
 	enum pobj_tx_stage stage;
 	int last_errnum;
+#ifdef 
+	uint64_t *ext_state; // external commit state address for blizzard integration
+#endif
 	struct lane_section *section;
 	SLIST_HEAD(txl, tx_lock_data) tx_locks;
 	SLIST_HEAD(txd, tx_data) tx_entries;
@@ -287,14 +290,44 @@ constructor_tx_add_range(void *ctx, void *ptr, size_t usable_size, void *arg)
 	return 0;
 }
 
+#ifdef __BLIZZARD_FT
+
+/*
+ * tx_get_state -- (internal) get the transaction state. We are intercepting to 
+ * validate the sate for our blizzard modified commit sate
+ */
+static inline uint64_t
+tx_get_state(PMEMobjpool *pop, struct lane_tx_layout *layout){
+	if(layout->state_ptr_state == TX_STATE_PTR_VALID){
+		return *layout->state_ptr;	
+	}else
+		return TX_STATE_NONE; // by default NONE state
+}
+
+
+static inline void 
+tx_set_state_ptr(PMEMobjpool *pop, struct lane_tx_layout *layout, uint64_t *state_ptr,uint64_t state_ptr_state){
+	/* we are writing to the same cacheline. Hence ordering between writes preserved without additional fencing and flushing */
+	layout->state_ptr = state_ptr;
+	layout->state_ptr_state = state_ptr_state;
+	pmemops_persist(&pop->p_ops, &layout->state_ptr, sizeof(uint64_t *)+sizeof(uint64_t));
+}
+
+#endif
+
 /*
  * tx_set_state -- (internal) set transaction state
  */
 static inline void
 tx_set_state(PMEMobjpool *pop, struct lane_tx_layout *layout, uint64_t state)
 {
+#ifndef __BLIZZARD_FT
 	layout->state = state;
 	pmemops_persist(&pop->p_ops, &layout->state, sizeof(layout->state));
+#else
+	*layout->state = state;
+	pmemops_persist(&pop->p_ops, layout->state_ptr, sizeof(*layout->state));
+#endif
 }
 
 /*
@@ -1161,6 +1194,23 @@ tx_realloc_common(struct tx *tx, PMEMoid oid, size_t size, uint64_t type_num,
 	return new_obj;
 }
 
+#ifdef __BLIZZARD_FT
+
+/*
+ *
+ */ 
+static void 
+pmemobj_tx_set_commit_addr(uint64_t *ext_state)
+{
+	get_tx()->ext_state = ext_state;
+}
+
+
+#endif
+
+
+
+
 /*
  * pmemobj_tx_begin -- initializes new transaction
  */
@@ -1211,6 +1261,17 @@ pmemobj_tx_begin(PMEMobjpool *pop, jmp_buf env, ...)
 		}
 
 		tx->pop = pop;
+
+#ifdef __BLIZZARD
+		/*	1. undo log is empty. -- rebuilded
+		 *  2. We set the state of the trsaction to TX_STATE_NONE, using by invalidating the state_ptr_state
+		 *  3. The commit state, pointed by state_ptr, (within an mbuf structure) is already set to TX_STATE_NONE and persisted at
+		 *  RAFT log commit
+		 *  4. We are setting state_ptr and state_ptr_state to valid values, to be used during commit step. 
+		 */ 
+		tx_set_state_ptr(pop, layout, tx->ext_state,TX_STATE_PTR_VALID);	
+#endif
+
 	} else {
 		FATAL("Invalid stage %d to begin new transaction", tx->stage);
 	}
@@ -1419,9 +1480,15 @@ tx_post_commit_cleanup(PMEMobjpool *pop,
 	/* post commit phase */
 	tx_post_commit(pop, tx, layout, 0 /* not recovery */);
 
+#ifndef __BLIZZARD_FT
 	/* clear transaction state */
 	tx_set_state(pop, layout, TX_STATE_NONE);
-
+#else
+	/* we invalidate the pointer to transaction state. If the pointer state is invalid, we return
+	 * TX_STATE_NONE in the get_tx_state 
+	 */ 
+	tx_set_state_ptr(pop, layout, NULL,TX_STATE_PTR_NONE);		
+#endif
 	runtime->cache_offset = 0;
 	/* cleanup cache */
 
@@ -2294,7 +2361,11 @@ lane_transaction_recovery(PMEMobjpool *pop, void *data, unsigned length)
 	int ret = 0;
 	ASSERT(sizeof(*layout) <= length);
 
+#ifndef __BLIZZARD_FT
 	if (layout->state == TX_STATE_COMMITTED) {
+#else
+	if (tx_get_state(pop,layout) == TX_STATE_COMMITTED) {
+#endif
 		/*
 		 * The transaction has been committed so we have to
 		 * process the undo log, do the post commit phase
@@ -2320,8 +2391,13 @@ lane_transaction_check(PMEMobjpool *pop, void *data, unsigned length)
 
 	struct lane_tx_layout *tx_sec = data;
 
+#ifndef __BLIZZARD_FT
 	if (tx_sec->state != TX_STATE_NONE &&
 		tx_sec->state != TX_STATE_COMMITTED) {
+#else
+	if (tx_get_state(pop,tx_sec) != TX_STATE_NONE &&
+		tx_get_state(pop,tx_sec) != TX_STATE_COMMITTED) {
+#endif
 		ERR("tx lane: invalid transaction state");
 		return -1;
 	}
