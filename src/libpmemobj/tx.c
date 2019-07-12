@@ -54,7 +54,7 @@ struct tx {
 	PMEMobjpool *pop;
 	enum pobj_tx_stage stage;
 	int last_errnum;
-#ifdef 
+#ifdef __BLIZZARD_FT 
 	uint64_t *ext_state; // external commit state address for blizzard integration
 #endif
 	struct lane_section *section;
@@ -325,8 +325,8 @@ tx_set_state(PMEMobjpool *pop, struct lane_tx_layout *layout, uint64_t state)
 	layout->state = state;
 	pmemops_persist(&pop->p_ops, &layout->state, sizeof(layout->state));
 #else
-	*layout->state = state;
-	pmemops_persist(&pop->p_ops, layout->state_ptr, sizeof(*layout->state));
+	*layout->state_ptr = state;
+	pmemops_persist(&pop->p_ops, layout->state_ptr, sizeof(*layout->state_ptr));
 #endif
 }
 
