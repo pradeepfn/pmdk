@@ -111,6 +111,14 @@ typedef void (*pmemobj_tx_callback)(PMEMobjpool *pop, enum pobj_tx_stage stage,
 #define POBJ_XADD_NO_FLUSH	POBJ_FLAG_NO_FLUSH
 #define POBJ_XADD_VALID_FLAGS	POBJ_XADD_NO_FLUSH
 
+#ifdef __BLIZZARD_FT
+/*
+ * Store the mbuf commit address in a thread local variable 
+ */
+
+void pmemobj_tx_set_commit_addr(uint64_t *ext_state);
+#endif
+
 /*
  * Starts a new transaction in the current thread.
  * If called within an open transaction, starts a nested transaction.

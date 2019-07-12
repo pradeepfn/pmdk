@@ -119,6 +119,12 @@ _pobj_validate_cb_sig(pmemobj_tx_callback cb)
 		errno = _pobj_errno;\
 }
 
+#ifdef __BLIZZARD_FT
+#define TX_SET_BLIZZARD_MBUF_COMMIT_ADDR(p) pmemobj_tx_set_commit_addr(p) 
+#endif
+
+
+
 #define TX_ADD(o)\
 pmemobj_tx_add_range((o).oid, 0, sizeof(*(o)._type))
 

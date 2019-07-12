@@ -1197,9 +1197,12 @@ tx_realloc_common(struct tx *tx, PMEMoid oid, size_t size, uint64_t type_num,
 #ifdef __BLIZZARD_FT
 
 /*
- *
+ * we store, mbuf commit-state address in a thread local variable (volatile state).
+ * This is a blizzard specific fault tolerant code piece. The transaction
+ * exeucting thread has to set this before calling tx_begin(). We avoid API changes
+ * by storing it in a thread local variable.
  */ 
-static void 
+void 
 pmemobj_tx_set_commit_addr(uint64_t *ext_state)
 {
 	get_tx()->ext_state = ext_state;
