@@ -51,16 +51,10 @@
 enum tx_state {
 	TX_STATE_NONE = 0,
 	TX_STATE_COMMITTED = 1,
-};
-
 #ifdef __BLIZZARD_FT
-enum tx_state_ptr_state{
-	TX_STATE_PTR_NONE = 0,
-	TX_STATE_PTR_VALID = 1,
-
-};
+	TX_STATE_VALID_PTR = 2
 #endif
-
+};
 
 struct tx_range {
 	uint64_t offset;
@@ -83,7 +77,7 @@ struct lane_tx_layout {
 #ifndef __BLIZZARD_FT
 	uint64_t state;
 #else
-	uint64_t state_ptr_state;		// mini-transaction; stores to same cacheline preserved by intel x86. so we can get away with multiple ordering poitns 
+	uint64_t state;		// mini-transaction; stores to same cacheline preserved by intel x86. so we can get away with multiple ordering poitns 
 	uint64_t *state_ptr;		// we point to the state variable on mbuf
 	char padding[64 - 2*sizeof(uint64_t)]; //cacheline padding
 #endif

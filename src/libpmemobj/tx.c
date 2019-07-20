@@ -298,18 +298,18 @@ constructor_tx_add_range(void *ctx, void *ptr, size_t usable_size, void *arg)
  */
 static inline uint64_t
 tx_get_state(PMEMobjpool *pop, struct lane_tx_layout *layout){
-	if(layout->state_ptr_state == TX_STATE_PTR_VALID){
+	if(layout->state == TX_STATE_VALID_PTR){
 		return *layout->state_ptr;	
 	}else
-		return TX_STATE_NONE; // by default NONE state
+		return layout->state; // by default NONE state
 }
 
 
 static inline void 
-tx_set_state_ptr(PMEMobjpool *pop, struct lane_tx_layout *layout, uint64_t *state_ptr,uint64_t state_ptr_state){
+tx_set_state_ptr(PMEMobjpool *pop, struct lane_tx_layout *layout, uint64_t *state_ptr,uint64_t state){
 	/* we are writing to the same cacheline. Hence ordering between writes preserved without additional fencing and flushing */
 	layout->state_ptr = state_ptr;
-	layout->state_ptr_state = state_ptr_state;
+	layout->state = state;
 	pmemops_persist(&pop->p_ops, &layout->state_ptr, sizeof(uint64_t *)+sizeof(uint64_t));
 }
 
@@ -1265,16 +1265,6 @@ pmemobj_tx_begin(PMEMobjpool *pop, jmp_buf env, ...)
 
 		tx->pop = pop;
 
-#ifdef __BLIZZARD
-		/*	1. undo log is empty. -- rebuilded
-		 *  2. We set the state of the trsaction to TX_STATE_NONE, using by invalidating the state_ptr_state
-		 *  3. The commit state, pointed by state_ptr, (within an mbuf structure) is already set to TX_STATE_NONE and persisted at
-		 *  RAFT log commit
-		 *  4. We are setting state_ptr and state_ptr_state to valid values, to be used during commit step. 
-		 */ 
-		tx_set_state_ptr(pop, layout, tx->ext_state,TX_STATE_PTR_VALID);	
-#endif
-
 	} else {
 		FATAL("Invalid stage %d to begin new transaction", tx->stage);
 	}
@@ -1483,15 +1473,9 @@ tx_post_commit_cleanup(PMEMobjpool *pop,
 	/* post commit phase */
 	tx_post_commit(pop, tx, layout, 0 /* not recovery */);
 
-#ifndef __BLIZZARD_FT
 	/* clear transaction state */
 	tx_set_state(pop, layout, TX_STATE_NONE);
-#else
-	/* we invalidate the pointer to transaction state. If the pointer state is invalid, we return
-	 * TX_STATE_NONE in the get_tx_state 
-	 */ 
-	tx_set_state_ptr(pop, layout, NULL,TX_STATE_PTR_NONE);		
-#endif
+
 	runtime->cache_offset = 0;
 	/* cleanup cache */
 
@@ -1537,9 +1521,17 @@ pmemobj_tx_commit(void)
 
 		pmemops_drain(&pop->p_ops);
 
+#ifndef __BLIZZARD_FT
 		/* set transaction state as committed */
 		tx_set_state(pop, layout, TX_STATE_COMMITTED);
+#else
+		if(tx->ext_state != NULL){
+			tx_set_state_ptr(pop, layout, tx->ext_state,TX_STATE_VALID_PTR);
+		}else{
+			tx_set_state(pop, layout, TX_STATE_COMMITTED);
+		}
 
+#endif
 		if (pop->tx_postcommit_tasks != NULL &&
 			ringbuf_tryenqueue(pop->tx_postcommit_tasks,
 				tx->section) == 0) {
